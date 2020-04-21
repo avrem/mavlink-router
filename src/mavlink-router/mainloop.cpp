@@ -137,13 +137,13 @@ int Mainloop::write_msg(Endpoint *e, const struct buffer *buf)
     return r;
 }
 
-void Mainloop::route_msg(struct buffer *buf, int target_sysid, int target_compid, int sender_sysid,
+void Mainloop::route_msg(Endpoint *src, struct buffer *buf, int target_sysid, int target_compid, int sender_sysid,
                          int sender_compid, uint32_t msg_id)
 {
     bool unknown = true;
 
     for (Endpoint **e = g_endpoints; *e != nullptr; e++) {
-        if ((*e)->accept_msg(target_sysid, target_compid, sender_sysid, sender_compid, msg_id)) {
+        if (*e != src && (*e)->accept_msg(target_sysid, target_compid, sender_sysid, sender_compid, msg_id)) {
             log_debug("Endpoint [%d] accepted message %u to %d/%d from %u/%u", (*e)->fd, msg_id, target_sysid,
                       target_compid, sender_sysid, sender_compid);
             write_msg(*e, buf);

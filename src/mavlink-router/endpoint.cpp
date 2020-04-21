@@ -76,7 +76,7 @@ int Endpoint::handle_read()
     struct buffer buf{};
 
     while ((r = read_msg(&buf, &target_sysid, &target_compid, &src_sysid, &src_compid, &msg_id)) > 0)
-        Mainloop::get_instance().route_msg(&buf, target_sysid, target_compid, src_sysid,
+        Mainloop::get_instance().route_msg(this, &buf, target_sysid, target_compid, src_sysid,
                                            src_compid, msg_id);
 
     return r;
