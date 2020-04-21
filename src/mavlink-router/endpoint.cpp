@@ -291,6 +291,20 @@ void Endpoint::_add_sys_comp_id(uint16_t sys_comp_id, uint32_t msg_id)
     _sys_comp_ids.push_back(std::make_pair(sys_comp_id, time(NULL)));
 }
 
+void Endpoint::prune_ids()
+{
+    time_t now = time(NULL);
+    const int timeout_sec = 5;
+
+    for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
+        if (now > it->second + timeout_sec) {
+            log_info("endpoint %s [%d] component %d/%d timed out", _name, fd, (it->first >> 8), (it->first & 0xFF));
+            it = _sys_comp_ids.erase(it);
+            it--;
+	}
+    }
+}
+
 bool Endpoint::has_sys_id(unsigned sysid)
 {
     for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {

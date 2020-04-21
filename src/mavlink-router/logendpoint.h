@@ -50,6 +50,8 @@ public:
      */
     void mark_unfinished_logs();
 
+    void prune_ids() override {}
+
 protected:
     const char *_logs_dir;
     int _target_system_id = -1;

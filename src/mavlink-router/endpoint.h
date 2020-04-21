@@ -103,6 +103,8 @@ public:
     struct buffer rx_buf;
     struct buffer tx_buf;
 
+    virtual void prune_ids();
+
 protected:
     virtual int read_msg(struct buffer *pbuf, int *target_system, int *target_compid,
                          uint8_t *src_sysid, uint8_t *src_compid, uint32_t *msg_id);

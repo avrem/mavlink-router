@@ -49,6 +49,7 @@ public:
     bool add_endpoints(Mainloop &mainloop, struct options *opt);
 
     void print_statistics();
+    void prune_ids();
 
     int epollfd = -1;
     bool should_process_tcp_hangups = false;

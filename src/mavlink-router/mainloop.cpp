@@ -358,6 +358,19 @@ static bool _print_statistics_timeout_cb(void *data)
     return true;
 }
 
+void Mainloop::prune_ids()
+{
+    for (Endpoint **e = g_endpoints; *e != nullptr; e++)
+        (*e)->prune_ids();
+}
+
+static bool _prune_ids_timeout_cb(void *data)
+{
+    Mainloop *mainloop = static_cast<Mainloop *>(data);
+    mainloop->prune_ids();
+    return true;
+}
+
 bool Mainloop::add_endpoints(Mainloop &mainloop, struct options *opt)
 {
     unsigned n_endpoints = 0, i = 0;
@@ -466,6 +479,8 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, struct options *opt)
 
     if (opt->report_msg_statistics)
         add_timeout(MSEC_PER_SEC, _print_statistics_timeout_cb, this);
+
+    add_timeout(MSEC_PER_SEC, _prune_ids_timeout_cb, this);
 
     return true;
 }
