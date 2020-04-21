@@ -127,6 +127,7 @@ private:
     void _del_timeouts();
     bool _retry_timeout_cb(void *data);
     bool _log_aggregate_timeout(void *data);
+    bool _prune_timeout();
 
     Mainloop() = default;
     Mainloop(const Mainloop &) = delete;

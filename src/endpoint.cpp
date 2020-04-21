@@ -422,6 +422,8 @@ void Endpoint::_add_sys_comp_id(uint8_t sysid, uint8_t compid)
 {
     uint16_t sys_comp_id = ((uint16_t)sysid << 8) | compid;
 
+    _last_seen_time.insert_or_assign(sys_comp_id, time(NULL));
+
     if (has_sys_comp_id(sys_comp_id)) {
         return;
     }
@@ -436,6 +438,22 @@ void Endpoint::_add_sys_comp_id(uint8_t sysid, uint8_t compid)
     // add to grouped endpoints as well
     for (auto e : _group_members) {
         e->_add_sys_comp_id(sysid, compid);
+    }
+
+    log_info("endpoint %s [%d] detected component %d/%d", _name.c_str(), fd, (sys_comp_id >> 8), (sys_comp_id & 0xFF));
+}
+
+void Endpoint::prune_ids()
+{
+    time_t now = time(NULL);
+    const int timeout_sec = 5;
+
+    for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
+        if (auto time_it = _last_seen_time.find(*it); time_it != _last_seen_time.end() && now > time_it->second + timeout_sec) {
+            log_info("endpoint %s [%d] component %d/%d timed out", _name.c_str(), fd, *it >> 8, *it & 0xFF);
+            it = _sys_comp_ids.erase(it);
+            it--;
+    	}
     }
 }
 
@@ -580,6 +598,9 @@ void Endpoint::print_statistics()
     printf("\n\tTransmitted messages {");
     printf("\n\t\tTotal: %u %" PRIu64 "KB", _stat.write.total, _stat.write.bytes / 1000);
     printf("\n\t}");
+    printf("\n\tKnown components:");
+    for (const auto &id : _sys_comp_ids)
+        printf("\n\t\t%u/%u", (id >> 8), id & 0xff);
     printf("\n}\n");
 }
 

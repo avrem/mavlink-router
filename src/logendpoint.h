@@ -67,6 +67,8 @@ public:
     static int parse_log_mode(const char *val, size_t val_len, void *storage, size_t storage_len);
     static int parse_fcu_id(const char *val, size_t val_len, void *storage, size_t storage_len);
 
+    void prune_ids() override {}
+
 protected:
     LogOptions _config;
     int _target_system_id;

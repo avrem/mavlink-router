@@ -354,6 +354,13 @@ static bool _print_statistics_timeout_cb(void *data)
     return true;
 }
 
+bool Mainloop::_prune_timeout()
+{
+    for (const auto &e : g_endpoints)
+        e->prune_ids();
+    return true;
+}
+
 bool Mainloop::dedup_check_msg(const buffer *buf)
 {
     return _msg_dedup.check_packet(buf->data, buf->len)
@@ -452,6 +459,8 @@ bool Mainloop::add_endpoints(const Configuration &config)
         log_info("Message de-duplication enabled: %ld ms period", config.dedup_period_ms);
         _msg_dedup.set_dedup_period(config.dedup_period_ms);
     }
+
+    add_timeout(MSEC_PER_SEC, std::bind(&Mainloop::_prune_timeout, this), this);
 
     return true;
 }

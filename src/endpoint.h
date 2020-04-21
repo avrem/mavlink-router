@@ -24,6 +24,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 #include "comm.h"
 #include "pollable.h"
@@ -166,6 +167,8 @@ public:
     // messages are accepted.
     static uint16_t sniffer_sysid;
 
+    virtual void prune_ids();
+
 protected:
     virtual int read_msg(struct buffer *pbuf);
     virtual ssize_t _read_msg(uint8_t *buf, size_t len) = 0;
@@ -198,6 +201,7 @@ protected:
 
     uint32_t _incomplete_msgs = 0;
     std::vector<uint16_t> _sys_comp_ids;
+    std::unordered_map<uint16_t, time_t> _last_seen_time;
 
 private:
     std::vector<uint32_t> _allowed_msg_ids;
