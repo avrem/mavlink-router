@@ -395,6 +395,9 @@ void Endpoint::print_statistics()
     printf("\n\tTransmitted messages {");
     printf("\n\t\tTotal: %u %luKBytes", _stat.write.total, _stat.write.bytes / 1000);
     printf("\n\t}");
+    printf("\n\tKnown components:");
+    for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++)
+        printf("\n\t\t%u/%u", (it->first >> 8), it->first & 0xff);
     printf("\n}\n");
 }
 
