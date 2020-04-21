@@ -57,7 +57,7 @@ public:
     int mod_fd(int fd, void *data, int events) const;
     int remove_fd(int fd) const;
     int loop();
-    void route_msg(struct buffer *buf);
+    void route_msg(Endpoint *src, struct buffer *buf);
     void handle_tcp_connection();
     int write_msg(const std::shared_ptr<Endpoint> &e, const struct buffer *buf) const;
     void process_tcp_hangups();

@@ -200,7 +200,7 @@ int Endpoint::handle_read()
 
         if (allowed_by_dedup(&buf)) {
             _add_sys_comp_id(buf.curr.src_sysid, buf.curr.src_compid);
-            Mainloop::get_instance().route_msg(&buf);
+            Mainloop::get_instance().route_msg(this, &buf);
         } else {
             if (Log::get_max_level() >= Log::Level::DEBUG) {
                 log_debug("Message %u discarded by de-duplication", buf.curr.msg_id);
