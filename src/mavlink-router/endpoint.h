@@ -108,7 +108,7 @@ protected:
                          uint8_t *src_sysid, uint8_t *src_compid, uint32_t *msg_id);
     virtual ssize_t _read_msg(uint8_t *buf, size_t len) = 0;
     bool _check_crc(const mavlink_msg_entry_t *msg_entry);
-    void _add_sys_comp_id(uint16_t sys_comp_id);
+    void _add_sys_comp_id(uint16_t sys_comp_id, uint32_t msg_id);
 
     const char *_name;
     size_t _last_packet_len = 0;

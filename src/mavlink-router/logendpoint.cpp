@@ -52,7 +52,7 @@ LogEndpoint::LogEndpoint(const char *name, const char *logs_dir, LogMode mode,
     , _mode(mode)
 {
     assert(_logs_dir);
-    _add_sys_comp_id(LOG_ENDPOINT_SYSTEM_ID << 8);
+    _add_sys_comp_id(LOG_ENDPOINT_SYSTEM_ID << 8, 0);
     _fsync_cb.aio_fildes = -1;
 
     aioinit aio_init_data {};

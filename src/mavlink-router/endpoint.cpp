@@ -227,7 +227,7 @@ int Endpoint::read_msg(struct buffer *pbuf, int *target_sysid, int *target_compi
             _stat.read.crc_error_bytes += expected_size;
             return 0;
         }
-        _add_sys_comp_id(((uint16_t)*src_sysid << 8) | *src_compid);
+        _add_sys_comp_id(((uint16_t)*src_sysid << 8) | *src_compid, *msg_id);
     }
 
     _stat.read.handled++;
@@ -281,10 +281,12 @@ int Endpoint::read_msg(struct buffer *pbuf, int *target_sysid, int *target_compi
     return msg_entry != nullptr ? ReadOk : ReadUnkownMsg;
 }
 
-void Endpoint::_add_sys_comp_id(uint16_t sys_comp_id)
+void Endpoint::_add_sys_comp_id(uint16_t sys_comp_id, uint32_t msg_id)
 {
     if (has_sys_comp_id_merged(sys_comp_id, true))
         return;
+
+    log_info("endpoint %s [%d] detected component %d/%d from message %d", _name, fd, (sys_comp_id >> 8), (sys_comp_id & 0xFF), msg_id);
 
     _sys_comp_ids.push_back(std::make_pair(sys_comp_id, time(NULL)));
 }
