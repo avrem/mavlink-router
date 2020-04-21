@@ -286,13 +286,13 @@ void Endpoint::_add_sys_comp_id(uint16_t sys_comp_id)
     if (has_sys_comp_id(sys_comp_id))
         return;
 
-    _sys_comp_ids.push_back(sys_comp_id);
+    _sys_comp_ids.push_back(std::make_pair(sys_comp_id, time(NULL)));
 }
 
 bool Endpoint::has_sys_id(unsigned sysid)
 {
     for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
-        if (((*it >> 8) | (sysid & 0xff)) == sysid)
+        if (((it->first >> 8) | (sysid & 0xff)) == sysid)
             return true;
     }
     return false;
@@ -301,7 +301,7 @@ bool Endpoint::has_sys_id(unsigned sysid)
 bool Endpoint::has_sys_comp_id(unsigned sys_comp_id)
 {
     for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
-        if (sys_comp_id == *it)
+        if (sys_comp_id == it->first)
             return true;
     }
 
@@ -316,7 +316,7 @@ bool Endpoint::accept_msg(int target_sysid, int target_compid, uint8_t src_sysid
                   src_sysid, src_compid);
         log_debug("\tKnown components:");
         for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
-            log_debug("\t\t%u/%u", (*it >> 8), *it & 0xff);
+            log_debug("\t\t%u/%u", (it->first >> 8), it->first & 0xff);
         }
     }
 

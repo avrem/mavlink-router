@@ -131,7 +131,7 @@ protected:
     } _stat;
 
     uint32_t _incomplete_msgs = 0;
-    std::vector<uint16_t> _sys_comp_ids;
+    std::vector<std::pair<uint16_t,time_t>> _sys_comp_ids;
 
 private:
     std::vector<uint32_t> _message_filter;
