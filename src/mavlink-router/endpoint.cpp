@@ -283,7 +283,7 @@ int Endpoint::read_msg(struct buffer *pbuf, int *target_sysid, int *target_compi
 
 void Endpoint::_add_sys_comp_id(uint16_t sys_comp_id)
 {
-    if (has_sys_comp_id(sys_comp_id))
+    if (has_sys_comp_id_merged(sys_comp_id, true))
         return;
 
     _sys_comp_ids.push_back(std::make_pair(sys_comp_id, time(NULL)));
@@ -298,11 +298,14 @@ bool Endpoint::has_sys_id(unsigned sysid)
     return false;
 }
 
-bool Endpoint::has_sys_comp_id(unsigned sys_comp_id)
+bool Endpoint::has_sys_comp_id_merged(unsigned sys_comp_id, bool update_time)
 {
     for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
-        if (sys_comp_id == it->first)
+        if (sys_comp_id == it->first) {
+            if (update_time)
+                it->second = time(NULL);
             return true;
+        }
     }
 
     return false;

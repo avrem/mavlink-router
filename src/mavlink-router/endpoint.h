@@ -90,10 +90,10 @@ public:
     uint8_t get_trimmed_zeros(const mavlink_msg_entry_t *msg_entry, const struct buffer *buffer);
 
     bool has_sys_id(unsigned sysid);
-    bool has_sys_comp_id(unsigned sys_comp_id);
+    bool has_sys_comp_id_merged(unsigned sys_comp_id, bool update_time = false);
     bool has_sys_comp_id(unsigned sysid, unsigned compid) {
         uint16_t sys_comp_id = ((sysid & 0xff) << 8) | (compid & 0xff);
-        return has_sys_comp_id(sys_comp_id);
+        return has_sys_comp_id_merged(sys_comp_id);
     }
 
     bool accept_msg(int target_sysid, int target_compid, uint8_t src_sysid, uint8_t src_compid, uint32_t msg_id);
