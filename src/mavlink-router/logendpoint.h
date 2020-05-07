@@ -24,7 +24,7 @@
 #include "endpoint.h"
 #include "timeout.h"
 
-#define LOG_ENDPOINT_SYSTEM_ID 2
+#define LOG_ENDPOINT_SYSTEM_ID 22
 
 
 enum class LogMode {
