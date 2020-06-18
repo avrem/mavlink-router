@@ -395,7 +395,7 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, struct options *opt)
         case Uart: {
             std::unique_ptr<UartEndpoint> uart{new UartEndpoint{}};
             if (uart->open(conf->device) < 0)
-                return false;
+                continue; // no endpoint - no problem
 
             if (conf->bauds->size() == 1) {
                 if (uart->set_speed((*(conf->bauds))[0]) < 0)
