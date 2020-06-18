@@ -379,7 +379,7 @@ bool Mainloop::add_endpoints(const Configuration &config)
         auto uart = std::make_shared<UartEndpoint>(conf.name);
 
         if (!uart->setup(conf)) {
-            return false;
+            continue; // no endpoint - no problem
         }
 
         g_endpoints.push_back(uart);
