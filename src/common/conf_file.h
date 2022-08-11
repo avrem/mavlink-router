@@ -18,6 +18,7 @@
 #pragma once
 
 #include <string>
+#include <cstddef>
 
 /**
  * Load and parse multiple conf files, offering methods to extract the configuration options to user

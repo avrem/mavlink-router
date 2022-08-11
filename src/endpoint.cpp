@@ -449,7 +449,8 @@ void Endpoint::prune_ids()
     const int timeout_sec = 5;
 
     for (auto it = _sys_comp_ids.begin(); it != _sys_comp_ids.end(); it++) {
-        if (auto time_it = _last_seen_time.find(*it); time_it != _last_seen_time.end() && now > time_it->second + timeout_sec) {
+        auto time_it = _last_seen_time.find(*it);
+        if (time_it != _last_seen_time.end() && now > time_it->second + timeout_sec) {
             log_info("endpoint %s [%d] component %d/%d timed out", _name.c_str(), fd, *it >> 8, *it & 0xFF);
             it = _sys_comp_ids.erase(it);
             it--;
