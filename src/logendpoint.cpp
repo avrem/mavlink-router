@@ -476,6 +476,46 @@ bool LogEndpoint::_start_alive_timeout()
     return !!_timeout.alive;
 }
 
+static uint64_t get_utc_micros()
+{
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    const uint64_t seconds = ts.tv_sec;
+    const uint64_t nanoseconds = ts.tv_nsec;
+    return (seconds * 1000000ULL + nanoseconds/1000ULL);
+}
+
+static void set_utc_micros(uint64_t time_utc_usec)
+{
+    timespec ts;
+    ts.tv_sec = time_utc_usec/1000000ULL;
+    ts.tv_nsec = (time_utc_usec % 1000000ULL) * 1000ULL;
+    clock_settime(CLOCK_REALTIME, &ts);
+}
+
+void LogEndpoint::_handle_timesync(const struct buffer *pbuf)
+{
+    if (_target_system_id != -1
+        && pbuf->curr.msg_id == MAVLINK_MSG_ID_SYSTEM_TIME
+        && pbuf->curr.src_sysid == _target_system_id
+        && pbuf->curr.src_compid == MAV_COMP_ID_AUTOPILOT1) {
+        const mavlink_system_time_t *system_time = (mavlink_system_time_t *)pbuf->curr.payload;
+        if (system_time->time_unix_usec > get_utc_micros() + 60000000ULL) {
+            set_utc_micros(system_time->time_unix_usec);
+            time_t t = time(nullptr);
+            struct tm *timeinfo = localtime(&t);
+            log_info("Time set to [%d] %i-%02i-%02i_%02i-%02i-%02i",
+                     _target_system_id,
+                     timeinfo->tm_year + 1900,
+                     timeinfo->tm_mon + 1,
+                     timeinfo->tm_mday,
+                     timeinfo->tm_hour,
+                     timeinfo->tm_min,
+                     timeinfo->tm_sec);
+        }
+    }
+}
+
 void LogEndpoint::_handle_auto_start_stop(const struct buffer *pbuf)
 {
     // wait until initialized

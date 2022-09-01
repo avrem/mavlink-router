@@ -94,6 +94,7 @@ protected:
     bool _fsync();
 
     void _handle_auto_start_stop(const struct buffer *pbuf);
+    void _handle_timesync(const struct buffer *pbuf);
 
 private:
     int _get_file(const char *extension);

@@ -111,6 +111,8 @@ int ULog::write_msg(const struct buffer *buffer)
         _target_system_id = buffer->curr.src_sysid;
     }
 
+    _handle_timesync(buffer);
+
     /* Check if we should start or stop logging */
     _handle_auto_start_stop(buffer);
 
