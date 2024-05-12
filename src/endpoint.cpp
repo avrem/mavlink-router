@@ -71,6 +71,7 @@ const ConfFile::OptionsTable UdpEndpoint::option_table[] = {
     {"address",         true,   ConfFile::parse_stdstring,      OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, address)},
     {"mode",            true,   UdpEndpoint::parse_udp_mode,    OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, mode)},
     {"port",            false,  ConfFile::parse_ul,             OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, port)},
+    {"localport",       false,  ConfFile::parse_ul,             OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, local_port)},
     {"filter",          false,  ConfFile::parse_uint32_vector,  OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, allow_msg_id_out)}, // legacy AllowMsgIdOut
     {"AllowMsgIdOut",   false,  ConfFile::parse_uint32_vector,  OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, allow_msg_id_out)},
     {"AllowSrcCompOut", false,  ConfFile::parse_uint8_vector,   OPTIONS_TABLE_STRUCT_FIELD(UdpEndpointConfig, allow_src_comp_out)},
@@ -974,10 +975,12 @@ bool UdpEndpoint::setup(UdpEndpointConfig conf)
         return false;
     }
 
-    if (!this->open(conf.address.c_str(), conf.port, conf.mode)) {
+    if (!this->open(conf.address.c_str(), conf.port, conf.local_port, conf.mode)) {
         log_error("Could not open %s:%ld", conf.address.c_str(), conf.port);
         return false;
     }
+
+    lock_target = conf.mode != UdpEndpointConfig::Mode::Server;
 
     for (auto msg_id : conf.allow_msg_id_out) {
         this->filter_add_allowed_msg_id(msg_id);
@@ -992,7 +995,7 @@ bool UdpEndpoint::setup(UdpEndpointConfig conf)
     return true;
 }
 
-int UdpEndpoint::open_ipv6(const char *ip, unsigned long port, UdpEndpointConfig::Mode mode)
+int UdpEndpoint::open_ipv6(const char *ip, unsigned long port, unsigned long local_port, UdpEndpointConfig::Mode mode)
 {
     fd = socket(AF_INET6, SOCK_DGRAM, 0);
     if (fd < 0) {
@@ -1053,7 +1056,7 @@ fail:
     return -EINVAL;
 }
 
-int UdpEndpoint::open_ipv4(const char *ip, unsigned long port, UdpEndpointConfig::Mode mode)
+int UdpEndpoint::open_ipv4(const char *ip, unsigned long port, unsigned long local_port, UdpEndpointConfig::Mode mode)
 {
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd < 0) {
@@ -1072,6 +1075,16 @@ int UdpEndpoint::open_ipv4(const char *ip, unsigned long port, UdpEndpointConfig
         }
         sockaddr.sin_port = 0;
     }
+    else if (local_port) {
+        sockaddr_in laddr;
+        laddr.sin_family = AF_INET;
+        laddr.sin_addr.s_addr = INADDR_ANY;
+        laddr.sin_port = htons(local_port);
+        if (bind(fd, (struct sockaddr*)&laddr, sizeof(laddr)) < 0) {
+            log_error("Error binding IPv4 socket for 0.0.0.0:%lu (%m)", port);
+            goto fail;
+        }
+    }
 
     config_sock.v4 = sockaddr;
 
@@ -1083,7 +1096,7 @@ fail:
     return -EINVAL;
 }
 
-bool UdpEndpoint::open(const char *ip, unsigned long port, UdpEndpointConfig::Mode mode)
+bool UdpEndpoint::open(const char *ip, unsigned long port, unsigned long local_port, UdpEndpointConfig::Mode mode)
 {
     const int broadcast_val = 1;
 
@@ -1091,9 +1104,9 @@ bool UdpEndpoint::open(const char *ip, unsigned long port, UdpEndpointConfig::Mo
 
     // setup the special IPv6/IPv4 part
     if (this->is_ipv6) {
-        open_ipv6(ip, port, mode);
+        open_ipv6(ip, port, local_port, mode);
     } else {
-        open_ipv4(ip, port, mode);
+        open_ipv4(ip, port, local_port, mode);
     }
 
     if (fd < 0) {
@@ -1169,7 +1182,10 @@ ssize_t UdpEndpoint::_read_msg(uint8_t *buf, size_t len)
         sock = (struct sockaddr *)&sockaddr;
     }
 
-    r = ::recvfrom(fd, buf, len, 0, sock, &addrlen);
+    if (!lock_target)
+        r = ::recvfrom(fd, buf, len, 0, sock, &addrlen);
+    else
+        r = ::recv(fd, buf, len, 0);
     if (r == -1 && errno == EAGAIN) {
         return 0;
     }

@@ -52,7 +52,7 @@ struct UdpEndpointConfig {
 
     std::string name;
     std::string address;
-    unsigned long port;
+    unsigned long port, local_port;
     Mode mode;
     std::vector<uint32_t> allow_msg_id_out;
     std::vector<uint8_t> allow_src_comp_out;
@@ -255,10 +255,10 @@ public:
     static bool validate_config(const UdpEndpointConfig &config);
 
 protected:
-    bool open(const char *ip, unsigned long port,
+    bool open(const char *ip, unsigned long port, unsigned long local_port,
               UdpEndpointConfig::Mode mode = UdpEndpointConfig::Mode::Client);
-    int open_ipv4(const char *ip, unsigned long port, UdpEndpointConfig::Mode mode);
-    int open_ipv6(const char *ip, unsigned long port, UdpEndpointConfig::Mode mode);
+    int open_ipv4(const char *ip, unsigned long port, unsigned long local_port, UdpEndpointConfig::Mode mode);
+    int open_ipv6(const char *ip, unsigned long port, unsigned long local_port, UdpEndpointConfig::Mode mode);
 
     ssize_t _read_msg(uint8_t *buf, size_t len) override;
 
@@ -271,6 +271,7 @@ protected:
     bool _nomessage_timeout_cb(void *data);
 
 private:
+    bool lock_target;
     bool is_ipv6;
     struct sockaddr_in sockaddr;
     struct sockaddr_in6 sockaddr6;
